@@ -74,7 +74,88 @@ Duncan_nb<-local.duncan(sf,"A","B",nb)
 g3<-g+geom_sf(data=Duncan_nb, aes(fill=local.duncan))
 g3+blues+reds
 
+#Example 4 - Manhattan - local duncan ####
 
+#Extract blocks for NY Manhattan and reproject
+  #NYMAN<-tigris::blocks(state="NY",county = "061")
+  #MAN2263<-sf::st_transform(NYMAN,crs=2263)
+  #saveRDS(MAN2263, "data/MAN2263.rds")
+MAN2263<-readRDS("data/MAN2263.rds") #re-read from local
 
+#Plot blocks
+gM<-ggplot()+geom_sf(data=MAN2263, fill="white")+theme_bw()
+gM
+
+#Ethnicity data census 2020 from
+#https://s-media.nyc.gov/agencies/dcp/assets/files/excel/data-tools/census/census2020/nyc-decennialcensusdata_2010_2020_census-blocks.xlsx
+#100Mb file > externally subsetted to Manhattan and ethnic data only
+#Meta from xls file:
+  # Total population	Pop2
+  # Hispanic	Hsp1
+  # White non-Hispanic	WNH
+  # Black non-Hispanic	BNH
+  # Asian non-Hispanic	ANH
+  # Some other race non-Hispanic	ONH
+  # Non-Hispanic of two or more races	TwoPlNH
+ETHN<-read.csv2("data/Manhattan_ethn.csv")[-1,]
+
+#Make geoid's comparable and merge
+MAN2263$GeoID<-substr(MAN2263$GEOID20, 5,16)
+all(MAN2263$GeoID %in% ETHN$GeoID) #check match
+
+#Map percentage of different ethnicity
+MAN<-merge(MAN2263,ETHN, by="GeoID")
+gM_Hsp1P<-ggplot()+
+  geom_sf(data=MAN, aes(fill=Hsp1P), col="transparent")+
+  theme_bw()+
+  scale_fill_viridis_c(option = "rocket", na.value="grey90")
+gM_Hsp1P
+
+gM_WNHP<-ggplot()+
+  geom_sf(data=MAN, aes(fill=WNHP), col="transparent")+
+  theme_bw()+
+  scale_fill_viridis_c(option = "rocket", na.value="grey90")
+gM_WNHP
+
+gM_BNHP<-ggplot()+
+  geom_sf(data=MAN, aes(fill=BNHP), col="transparent")+
+  theme_bw()+
+  scale_fill_viridis_c(option = "rocket", na.value="grey90")
+gM_BNHP
+
+gM_ANHP<-ggplot()+
+  geom_sf(data=MAN, aes(fill=ANHP), col="transparent")+
+  theme_bw()+
+  scale_fill_viridis_c(option = "rocket", na.value="grey90")
+gM_ANHP
+
+gridExtra::grid.arrange(gM_Hsp1P, gM_WNHP, gM_BNHP, gM_ANHP,nrow = 2)
+
+#nb
+sgbpMAN<-st_intersects(MAN, MAN)
+nbMAN<-as.nb.sgbp(sgbpMAN)
+
+#local.duncan
+Duncan_MAN_HW<-local.duncan(MAN,"Hsp1","WNH",nbMAN)
+Duncan_MAN_BW<-local.duncan(MAN,"BNH","WNH",nbMAN)
+Duncan_MAN_AW<-local.duncan(MAN,"ANH","WNH",nbMAN)
+
+gM_HW<-ggplot()+geom_sf(data=Duncan_MAN_HW, aes(fill=local.duncan))+
+  theme_bw()+ scale_fill_viridis_c(option = "turbo", na.value="grey90")
+gM_HW
+
+gM_BW<-ggplot()+geom_sf(data=Duncan_MAN_BW, aes(fill=local.duncan))+
+  theme_bw()+ scale_fill_viridis_c(option = "turbo", na.value="grey90")
+gM_BW
+
+gM_AW<-ggplot()+geom_sf(data=Duncan_MAN_AW, aes(fill=local.duncan))+
+  theme_bw()+ scale_fill_viridis_c(option = "turbo", na.value="grey90")
+gM_AW
+
+#local.duncan scatterplot
+source("R/duncan.plot.R")
+duncan.plot(Duncan_MAN_HW,"Hsp1","WNH")
+duncan.plot(Duncan_MAN_BW,"BNH","WNH")
+duncan.plot(Duncan_MAN_AW,"ANH","WNH")
 
 
