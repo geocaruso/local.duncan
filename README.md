@@ -6,7 +6,7 @@ a willingness emerged from discussions with Frederic Docquier, Philippe Gerber a
 to have a spatially distributed version of the Duncan index of segregation.
 
 I thought it would exist already in some form but I didn't find it. I thus made a first quick overnight raster-based version with Yann Ferro
-early December 2022 for direct use in the paper 9 of the census series
+early December 2023 for direct use in the paper 9 of the census series
 (see https://statistiques.public.lu/fr/recensement.html), promising myself to develop a proper version.
  
 This repo is for reaching a cleaner version, starting from a vector approach using sf and neighbours lists
