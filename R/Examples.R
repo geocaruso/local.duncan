@@ -132,7 +132,7 @@ gM_ANHP
 gridExtra::grid.arrange(gM_Hsp1P, gM_WNHP, gM_BNHP, gM_ANHP,nrow = 2)
 
 #nb
-sgbpMAN<-st_intersects(MAN, MAN)
+sgbpMAN<-sf::st_intersects(MAN, MAN)
 nbMAN<-as.nb.sgbp(sgbpMAN)
 
 #local.duncan

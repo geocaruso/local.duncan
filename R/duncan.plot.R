@@ -1,5 +1,5 @@
 #' duncan.plot.R
-#' Produces a duncan.scatterplot (a bit similat to a Moran scatterplot) where
+#' Produces a duncan.scatterplot (a bit similar to a Moran scatterplot) where
 #' x-axis is the calculated share of group A in A+B for each spatial unit
 #'  and y-axis is the local duncan index for each spatial unit
 #' Plus a horizontal line for the global duncan
