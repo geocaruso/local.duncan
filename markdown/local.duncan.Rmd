@@ -2,7 +2,9 @@
 title: "About a local Duncan segregation index"
 author: "Geoffrey Caruso"
 date: "2023-12-14"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -11,15 +13,15 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Scope
 
-This document showcases an implementation of a local version of the Duncan segregation index. In this local version, segregation is to be undesrtood within a given neighbourhood range, not over the entire space. Although there is no theoretical link drawn between the global and local versions (as would be the case for Moran's I for example), the local.duncan is an approach that seems to be able to stress spatial discontinuities in the segregation, with some regions being highly segregated globally but havin with few spatial discontinuities or conversely many. It would probably need to be compared to location quotients, joint count statistics and other co-location indices, or even LISA's on group percentage, as well as to aggregate - but spatial - versions of Duncan that account for some spatial structure (see e.g. Apparicio, P: https://doi.org/10.4000/cybergeo.12063). And today simply needs to be further digested to better grasp its properties.
+This document showcases an implementation of a local version of the Duncan segregation index. In this local version, segregation is to be undesrtood within a given neighbourhood range, not over the entire space. Although there is no theoretical link drawn between the global and local versions (as would be the case for Moran's I for example), the local.duncan is an approach that seems to be able to stress spatial discontinuities in segregation, with some regions being highly segregated globally but having  few spatial discontinuities or, conversely, many. It would probably need to be compared to location quotients, joint count statistics and other co-location indices, or even LISA's on group percentage, as well as to aggregate - but spatial - versions of Duncan that account for some spatial structure (see e.g. Apparicio, P: https://doi.org/10.4000/cybergeo.12063). As of today the metric also simply needs to be further digested to better grasp its properties.
 
-This local.duncan was made from a need to have a mapped version of a segregation index as part of the census 2021 analysis project in Luxembourg involving the University of Luxembourg, LISER, and Statec (statistical office) and conversation with Frederic Docquier, Philippe Gerber and Isabelle Pigeron-Piroth. Geoffrey Caruso suggested a "local" version of the Duncan, thinking it would already exist, but couldn't find any. Geoffrey Caruso then made a quick terra-based version of a 'local.duncan' with Yann Ferro (convincing him that doing it with arcgis was terribly inefficient and cluttered with files).
+This local.duncan was made from a demand to have a mapped version of a segregation index as part of the census 2021 analysis project in Luxembourg (involving the University of Luxembourg, LISER, and Statec (statistical office)) and conversation with Frederic Docquier, Philippe Gerber and Isabelle Pigeron-Piroth. Geoffrey Caruso suggested a "local" version of the Duncan, thinking it would already exist, but then couldn't find any. Geoffrey Caruso then made a quick terra-based version of a 'local.duncan' with Yann Ferro (who quickly found out doing it with arcgis was terribly inefficient).
 
-This is a cleaner vector development using a neighbours list and simple feature access (sf) polygon support, leading to function local.duncan(). Time permitting, the primary raster version will be properly reworked as a focal.duncan() using the focal function in terra. A result of that first raster version is shown in the publication 9 at https://statistiques.public.lu/fr/recensement.html. And the code available at https://github.com/geocaruso/cartolux/blob/eea3ac42f82eeaf2a29b8abd65606fba8cee4e6c/R/script_indice_duncan.R
-
+We propose here a cleaner vector-based development using a neighbours list and simple feature access (sf) polygon support, leading to a main function named local.duncan(). Time permitting, the primary raster version will be properly reworked as a focal.duncan() function using the focal function in terra. A result of that first raster version is shown in the publication 9 at https://statistiques.public.lu/fr/recensement.html. And the code is at the moment available at https://github.com/geocaruso/cartolux/blob/eea3ac42f82eeaf2a29b8abd65606fba8cee4e6c/R/script_indice_duncan.R
 
 ## Starting example - duncan()
-A simple duncan() function was first created to be used within the next function. It goes as follows and is stored in "R/duncan.R"
+A simple duncan() function is first created to be used within the next function. It is stored in "R/duncan.R". It is a simple implementation for a data.fram of the Duncan index with n units i and population types A and B:
+$$\frac{1}{2} \sum_{i}^{n}\left\lvert \frac{A_{i}}{\sum_{i}^{n}A_{i}}-\frac{B_{i}}{\sum_{i}^{n}B_{i}} \right\rvert$$
 
 ```{r duncan source, echo=TRUE}
 duncan<-function(df,PopA,PopB){
@@ -219,7 +221,7 @@ The census data is obtained from https://s-media.nyc.gov/agencies/dcp/assets/fil
 ETHN<-read.csv2("../data/Manhattan_ethn.csv")[-1,]
 names(ETHN)
 ```
-We make the id's from within the sd comparable to those in the census and merge
+We make the id's from within the sf comparable to those in the census and merge
 
 ```{r merge data}
 MAN2263$GeoID<-substr(MAN2263$GEOID20, 5,16)
@@ -288,7 +290,8 @@ duncan.plot<-function(local.duncan.sf,PopA,PopB){
     geom_point(data=df, aes(x=shA, y=local.duncan, col=local.duncan))+
     scale_color_viridis_c(option = "turbo")+
     geom_hline(yintercept=global.duncan(local.duncan.sf,PopA,PopB), col="red")+
-    geom_vline(xintercept=sum(A)/(sum(A)+sum(B)), col="blue")
+    geom_vline(xintercept=sum(A)/(sum(A)+sum(B)), col="blue")+
+    coord_cartesian(xlim=c(0,1), ylim=c(0,1))
 }
 ```
 
@@ -330,6 +333,45 @@ From the plot one can see that when you pull apart horizontally the points to th
 
 This calls for examining a case where the global duncan is the same but the local.ones high (a checkerboard) or low (grouped). From this we see this is not very far from a LISA (not the clusters, the values) but with the Duncan way of interpreting. Further digestion needed here!
 
+## Chessboard vs Zone field example
 
+Same quantity (with a little random effect) of the two populations and same global duncan.
+
+```{r chessboard, echo=TRUE}
+x1<-rep((1:8),each=8)
+y1<-rep((1:8),8)
+df<-data.frame(id=paste(x1,y1,sep="_"))
+df$geom<-sprintf("POLYGON((%s %s, %s %s, %s %s, %s %s, %s %s))",
+                 x1, y1, x1, y1+1, x1+1, y1+1, x1+1, y1, x1, y1)
+sf<-sf::st_as_sf(df, wkt = "geom")
+#Populate
+H<-100 #increase to differentiate from other and random effect (sd=1)
+L<-20
+sf$A<-rep(c(H,L,H,L,H,L,H,L,L,H,L,H,L,H,L,H),4)+rnorm(n=64)
+sf$B<-rep(c(L,H,L,H,L,H,L,H,H,L,H,L,H,L,H,L),4)+rnorm(n=64)
+sf$A2<-rep(c(H,H,H,H,L,L,L,L),8)+rnorm(n=64)
+sf$B2<-rep(c(L,L,L,L,H,H,H,H),8)+rnorm(n=64)
+#Plot
+plot(sf)
+```
+Two patterns. Same global Duncan:
+```{r}
+global.duncan(sf,"A","B")
+global.duncan(sf,"A2","B2")
+```
+Differing local.duncan (beyond border effect)
+```{r}
+sgbp<-sf::st_intersects(sf, sf)
+nb<-as.nb.sgbp(sgbp)
+ld<-local.duncan(sf,"A","B",nb)
+ld2<-local.duncan(sf,"A2","B2",nb)
+```
+
+```{r}
+dp<-duncan.plot(ld,"A","B")
+dp2<-duncan.plot(ld2,"A2","B2")
+dp
+dp2
+```
 
 

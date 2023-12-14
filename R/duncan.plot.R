@@ -23,5 +23,6 @@ duncan.plot<-function(local.duncan.sf,PopA,PopB){
     geom_point(data=df, aes(x=shA, y=local.duncan, col=local.duncan))+
     scale_color_viridis_c(option = "turbo")+
     geom_hline(yintercept=global.duncan(local.duncan.sf,PopA,PopB), col="red")+
-    geom_vline(xintercept=sum(A)/(sum(A)+sum(B)), col="blue")
+    geom_vline(xintercept=sum(A)/(sum(A)+sum(B)), col="blue")+
+    coord_cartesian(xlim=c(0,1), ylim=c(0,1))
 }
