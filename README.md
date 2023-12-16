@@ -1,11 +1,11 @@
 # local.duncan
 Local spatial version of Duncan segregation index.
 
-From a discussion with colleagues involved in the census description project (project including STATEC, LISER and UNI.LU)
+From a discussion with colleagues involved in the cLuxembourg ensus description project (project including STATEC, LISER and UNI.LU)
 a willingness emerged from discussions with Frederic Docquier, Philippe Gerber and Isabelle Pigeron
 to have a spatially distributed version of the Duncan index of segregation.
 
-I thought it would exist already in some form but I didn't find it. I thus made a first quick overnight raster-based version with Yann Ferro
+I thought it would exist already in some form, but I didn't find it. I thus made a first quick overnight raster-based version with Yann Ferro
 early December 2023 for direct use in the paper 9 of the census series
 (see https://statistiques.public.lu/fr/recensement.html), promising myself to develop a proper version.
  
