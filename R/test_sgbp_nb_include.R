@@ -1,4 +1,4 @@
-#Script to adapt result of as.nb.sgbp (after st_intersects) so it includes or removes self
+#Test script to adapt result of as.nb.sgbp (after st_intersects) so it includes or removes self
 # and attributes (self.included) made similar to spdep include/remove self
 # For mixed cases (some self are present some other are absent), if include or
 # remove is not requested then adds an attribute (self.is.in) indicating the elements
